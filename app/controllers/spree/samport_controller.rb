@@ -29,14 +29,12 @@ class Spree::SamportController < Spree::BaseController
   private
   def failure(order)
     logger.debug "\n--------- Samport.report.failure >> #{order.number} >> #{order.id} >> #{order.state} ---------"
-    current_order = order
     order.update_attribute(:state, 'payment')
     logger.debug "\n--------- #{I18n.t(:samport_payment_process_failed)} ---------"
   end
   
   def success(order)
     logger.debug "\n--------- Samport.report.success >> #{order.number} >> #{order.id} >> #{order.state} ---------"
-    current_order = order
     order.next
     order.payment.complete!
     logger.debug "\n--------- #{I18n.t(:order_processed_successfully)} ---------"
