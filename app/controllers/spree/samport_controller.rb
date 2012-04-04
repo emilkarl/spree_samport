@@ -1,34 +1,44 @@
 class Spree::SamportController < Spree::BaseController
   
-  respond_to :html
-  
-  def failure
-    @order = current_user.orders.find_by_number(params[:order_number])
-    logger.debug "\n--------- #{params[:order_number]} >> #{@order.id} >> #{@order.state} ---------"
-    unless @order && (@order.state == 'payment' || @order.state == 'complete') && @order.payment_method.is_a?(Spree::PaymentMethod::Samport)
-      redirect_to checkout_state_path(@order.state) and return if @order.present?
-      redirect_to root_path
+  def report
+    logger.debug "\n--------- Samport.report >> #{params} for client #{request.remote_ip} ---------"
+    
+    samport_servers = [
+      '82.99.3.1',
+      '82.99.3.32',
+      '88.80.180.132',
+      '88.80.180.142',
+      'https://secure.telluspay.com',
+      '127.0.0.1'
+      ]
+    
+    
+    raise Spree::Core::GatewayError.new('No access') unless samport_servers.include? request.remote_ip
+    
+    order = Spree::Order.find_by_number(params[:order_number])
+    
+    if params[:response_code] == '00'
+      success(order)
+    else
+      failure(order)
     end
-    current_order = @order
-    @order.update_attribute(:state, 'payment')
-    flash[:error] = I18n.t(:samport_payment_process_failed)
-    redirect_to checkout_state_path(@order.state)
+    
+    render :nothing => true
   end
   
-  def success
-    @order = current_user.orders.find_by_number(params[:order_number])
-    logger.debug "\n--------- #{params[:order_number]} >> #{@order.id} >> #{@order.state} ---------"
-    unless @order && (@order.state == 'payment' || @order.state == 'complete') && @order.payment_method.is_a?(Spree::PaymentMethod::Samport)
-      logger.debug "\n--------- SamportController -> Redirect to state or root ---------"
-      redirect_to checkout_state_path(@order.state) and return if @order.present?
-      redirect_to root_path
-    end
-    logger.debug "\n--------- #{@order.id} ---------"
-    current_order = @order
-    @order.next
-    @order.payment.complete!
-    flash[:notice] = t(:order_processed_successfully)
-    flash[:commerce_tracking] = "nothing special"
-    redirect_to order_path @order
+  private
+  def failure(order)
+    logger.debug "\n--------- Samport.report.failure >> #{order.number} >> #{order.id} >> #{order.state} ---------"
+    current_order = order
+    order.update_attribute(:state, 'payment')
+    logger.debug "\n--------- #{I18n.t(:samport_payment_process_failed)} ---------"
+  end
+  
+  def success(order)
+    logger.debug "\n--------- Samport.report.success >> #{order.number} >> #{order.id} >> #{order.state} ---------"
+    current_order = order
+    order.next
+    order.payment.complete!
+    logger.debug "\n--------- #{I18n.t(:order_processed_successfully)} ---------"
   end
 end
