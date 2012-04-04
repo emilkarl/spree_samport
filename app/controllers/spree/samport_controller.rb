@@ -12,7 +12,6 @@ class Spree::SamportController < Spree::BaseController
       '127.0.0.1'
       ]
     
-    
     raise Spree::Core::GatewayError.new('No access') unless samport_servers.include? request.remote_ip
     
     order = Spree::Order.find_by_number(params[:order_number])
