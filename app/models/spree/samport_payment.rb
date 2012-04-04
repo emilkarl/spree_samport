@@ -4,27 +4,11 @@ class Spree::SamportPayment < ActiveRecord::Base
   attr_accessible :samport_key
   
   def actions
-    %w{capture}
+    %w{}
   end
 
   def process!(payment)
     logger.debug "\n----------- SamportPayment.process! -----------\n"
-    capture(payment) if Spree::Config[:auto_capture]
-  end
-  
-  # Indicates whether its possible to capture the payment
-  def can_capture?(payment)
-    ['checkout', 'pending', 'processing'].include?(payment.state)
-  end
-  
-  # Activate action
-  def capture(payment)
-    logger.debug "\n----------- SamportPayment.capture -----------\n"
-    payment.update_attribute(:state, 'pending') if payment.state == 'checkout' || payment.state == 'processing'
-    
-    # Complete order
-    payment.complete
-    true
   end
   
   def get_samport_key(payment_method, order)
@@ -54,7 +38,7 @@ class Spree::SamportPayment < ActiveRecord::Base
     extra_data= "#order_number=#{order.number}#order_id=#{order.id}#payment_id=#{order.payment.id}"
     
     @domain = "http://unix.telluspay.com/Add/?"
-    @querystring = "TP01=#{direct_capture}&TP700=#{terminal_id}&TP701=#{order.number}&TP740=#{URI.escape(data)}&TP901=#{transaction_type}&TP491=#{iso_language_code}&TP490=#{iso_currency}&TP801=#{URI.escape(order.email)}&TP8021=#{URI.escape(order.bill_address.firstname)}&TP8022=#{URI.escape(order.bill_address.lastname)}&TP803=#{URI.escape(order.bill_address.address1)}&TP804=#{URI.escape(order.bill_address.zipcode)}&TP805=#{URI.escape(order.bill_address.city)}&TP806=#{order.bill_address.country.iso}&TP8071=#{order.user.id}&TP900=127.0.0.1&TP950=#{extra_data}"
+    @querystring = "TP01=#{direct_capture}&TP700=#{terminal_id}&TP701=#{order.number}&TP740=#{URI.escape(data)}&TP901=#{transaction_type}&TP491=#{iso_language_code}&TP490=#{iso_currency}&TP801=#{URI.escape(order.email)}&TP8021=#{URI.escape(order.bill_address.firstname)}&TP8022=#{URI.escape(order.bill_address.lastname)}&TP803=#{URI.escape(order.bill_address.address1)}&TP804=#{URI.escape(order.bill_address.zipcode)}&TP805=#{URI.escape(order.bill_address.city)}&TP806=#{order.bill_address.country.iso}&TP8071=#{order.user.id}&TP900=127.0.0.1&TP950=#{URI.escape(extra_data)}"
     logger.debug "\n----------- SamportPayment.create url -----------\n"
     logger.debug "\n----------- #{@domain}#{@querystring} -----------\n"
     

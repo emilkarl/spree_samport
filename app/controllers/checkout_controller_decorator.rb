@@ -8,7 +8,6 @@ Spree::CheckoutController.class_eval do
     
     if @payment_method && @payment_method.kind_of?(Spree::PaymentMethod::Samport)
       @order.update_attributes(object_params)
-      @order.update_attribute(:state => 'pending')
       samport_key = Spree::SamportPayment.new.get_samport_key(@payment_method, @order)
       @order.payment.source.update_attribute(:samport_key, samport_key)
       redirect_uri = "https://secure.telluspay.com/WebOrder/?#{samport_key}"
