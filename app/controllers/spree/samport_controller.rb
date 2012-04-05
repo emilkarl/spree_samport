@@ -12,13 +12,14 @@ class Spree::SamportController < Spree::BaseController
       '127.0.0.1'
       ]
     
+    # Deny access for clients that are not Samport or localhost (for testing)
     raise Spree::Core::GatewayError.new('No access') unless samport_servers.include? request.remote_ip
     
     order = Spree::Order.find_by_number(params[:order_number])
     
-    if params[:response_code] == '00'
+    if params[:response_code] == '00' # Response Code OK, approved payment
       success(order)
-    else
+    else # Denied payment
       failure(order)
     end
     
