@@ -8,8 +8,20 @@ Spree::CheckoutController.class_eval do
     @payment_method = Spree::PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])
     
     if @payment_method && @payment_method.kind_of?(Spree::PaymentMethod::Samport)
-     
+     logger.debug "\n----------- #{object_params} -----------\n"
       @order.update_attributes(object_params)
+      
+      if @order.coupon_code.present?
+        if Spree::Promotion.exists?(:code => @order.coupon_code)
+          fire_event('spree.checkout.coupon_code_added', :coupon_code => @order.coupon_code)
+          # If it doesn't exist, raise an error!
+          # Giving them another chance to enter a valid coupon code
+        else
+          flash[:error] = t(:promotion_not_found)
+          render :edit and return
+        end
+      end
+      
       @order.update_attribute(:state, 'payment') # Set order state
       
       @order.payment.source.update_attribute(:client_ip, request.remote_ip) # Set client ip

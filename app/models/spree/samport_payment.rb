@@ -1,7 +1,7 @@
 class Spree::SamportPayment < ActiveRecord::Base
   has_many :payments, :as => :source
   
-  attr_accessible :samport_key
+  attr_accessible :samport_key, :card_type
   
   def actions
   end
@@ -25,17 +25,24 @@ class Spree::SamportPayment < ActiveRecord::Base
     end
     
     # Shipping cost
-    shipping_cost = order.ship_total * 100
-    shipping_cost = (1 + Spree::TaxRate.default) * shipping_cost if Spree::Config[:shipment_inc_vat]
+    #shipping_cost = order.ship_total * 100
+    #shipping_cost = (1 + Spree::TaxRate.default) * shipping_cost if Spree::Config[:shipment_inc_vat]
+    #
+    #data << clean_string("1:#{order.shipping_method.name}:1:#{shipping_cost.to_i}")
     
-    data << clean_string("1:#{order.shipping_method.name}:1:#{shipping_cost.to_i}")
-
+    order.adjustments.eligible.each do |adjustment|
+      next if (adjustment.originator_type == 'Spree::TaxRate') and (adjustment.amount == 0)
+      
+      amount = 100 * adjustment.amount
+      data << clean_string("1:#{adjustment.label}:1:#{amount.to_i}")
+    end 
+    
     data = data.join(',')
-    #extra_data= "#order_number=#{order.number}#order_id=#{order.id}#payment_id=#{order.payment.id}"
-    extra_data= ""
+    
+    logger.debug "\n\n\n#{data}\n\n\n"
     
     @domain = "http://unix.telluspay.com/Add/?"
-    @querystring = "TP01=#{direct_capture}&TP700=#{terminal_id}&TP701=#{order.number}&TP740=#{data}&TP901=#{transaction_type}&TP491=#{iso_language_code}&TP490=#{iso_currency}&TP801=#{clean_string(order.email)}&TP8021=#{clean_string(order.bill_address.firstname)}&TP8022=#{clean_string(order.bill_address.lastname)}&TP803=#{clean_string(order.bill_address.address1)}&TP804=#{clean_string(order.bill_address.zipcode)}&TP805=#{clean_string(order.bill_address.city)}&TP806=#{order.bill_address.country.iso}&TP8071=#{order.user.id}&TP900=#{self.client_ip}&TP950=#{clean_string(extra_data)}"
+    @querystring = "TP01=#{direct_capture}&TP700=#{terminal_id}&TP701=#{order.number}&TP740=#{data}&TP901=#{transaction_type}&TP491=#{iso_language_code}&TP490=#{iso_currency}&TP801=#{clean_string(order.email)}&TP8021=#{clean_string(order.bill_address.firstname)}&TP8022=#{clean_string(order.bill_address.lastname)}&TP803=#{clean_string(order.bill_address.address1)}&TP804=#{clean_string(order.bill_address.zipcode)}&TP805=#{clean_string(order.bill_address.city)}&TP806=#{order.bill_address.country.iso}&TP8071=#{order.user.id}&TP900=#{self.client_ip}"
     logger.debug "\n----------- SamportPayment.create url -----------\n"
     logger.debug "\n----------- #{@domain}#{@querystring} -----------\n"
     
