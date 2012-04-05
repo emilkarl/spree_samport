@@ -37,7 +37,7 @@ class Spree::SamportController < Spree::BaseController
   def success(order)
     logger.debug "\n--------- Samport.report.success >> #{order.number} >> #{order.id} >> #{order.state} ---------"
     order.payment.complete!
-    order.finalize!
+    order.next
     logger.debug "\n--------- #{I18n.t(:order_processed_successfully)} ---------"
   end
 end

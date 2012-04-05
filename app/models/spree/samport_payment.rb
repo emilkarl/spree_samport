@@ -21,21 +21,21 @@ class Spree::SamportPayment < ActiveRecord::Base
       logger.debug "\n----------- Item: #{item.quantity}, #{item.product.sku}, #{item.product.name}, #{item.product.price} -----------\n"
       # <ArtNo>:<Description>:<Quantity>:<Price in the lowest value (ören, cent etc.)>
       price = item.product.price * 100
-      data << "#{item.product.sku}:#{item.product.name}:#{item.quantity}:#{price.to_i}"
+      data << clean_string("#{item.product.sku}:#{item.product.name}:#{item.quantity}:#{price.to_i}")
     end
     
     # Shipping cost
     shipping_cost = order.ship_total * 100
     shipping_cost = (1 + Spree::TaxRate.default) * shipping_cost if Spree::Config[:shipment_inc_vat]
     
-    data << "1:#{order.shipping_method.name}:1:#{shipping_cost.to_i}"
+    data << clean_string("1:#{order.shipping_method.name}:1:#{shipping_cost.to_i}")
 
     data = data.join(',')
     #extra_data= "#order_number=#{order.number}#order_id=#{order.id}#payment_id=#{order.payment.id}"
     extra_data= ""
     
     @domain = "http://unix.telluspay.com/Add/?"
-    @querystring = "TP01=#{direct_capture}&TP700=#{terminal_id}&TP701=#{order.number}&TP740=#{URI.escape(data)}&TP901=#{transaction_type}&TP491=#{iso_language_code}&TP490=#{iso_currency}&TP801=#{URI.escape(order.email)}&TP8021=#{URI.escape(order.bill_address.firstname)}&TP8022=#{URI.escape(order.bill_address.lastname)}&TP803=#{URI.escape(order.bill_address.address1)}&TP804=#{URI.escape(order.bill_address.zipcode)}&TP805=#{URI.escape(order.bill_address.city)}&TP806=#{order.bill_address.country.iso}&TP8071=#{order.user.id}&TP900=#{self.client_ip}&TP950=#{URI.escape(extra_data)}"
+    @querystring = "TP01=#{direct_capture}&TP700=#{terminal_id}&TP701=#{order.number}&TP740=#{data}&TP901=#{transaction_type}&TP491=#{iso_language_code}&TP490=#{iso_currency}&TP801=#{clean_string(order.email)}&TP8021=#{clean_string(order.bill_address.firstname)}&TP8022=#{clean_string(order.bill_address.lastname)}&TP803=#{clean_string(order.bill_address.address1)}&TP804=#{clean_string(order.bill_address.zipcode)}&TP805=#{clean_string(order.bill_address.city)}&TP806=#{order.bill_address.country.iso}&TP8071=#{order.user.id}&TP900=#{self.client_ip}&TP950=#{clean_string(extra_data)}"
     logger.debug "\n----------- SamportPayment.create url -----------\n"
     logger.debug "\n----------- #{@domain}#{@querystring} -----------\n"
     
@@ -47,6 +47,10 @@ class Spree::SamportPayment < ActiveRecord::Base
   end
   
   private
+  def clean_string(string)
+    URI.encode(string).sub('&',I18n.t(:and)).sub(',','')
+  end
+  
   def gateway_error(text)
     msg = "#{I18n.t(:gateway_error)} ... #{text}"
     logger.error(msg)

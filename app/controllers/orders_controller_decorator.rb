@@ -3,6 +3,13 @@ Spree::OrdersController.class_eval do
   
   def update_flash_message
     logger.debug "\n----------- Samport::OrdersController.update_flash_message -----------\n"
-    flash[:notice] = t(:order_processed_successfully) if !params[:pstatus].blank? && params[:pstatus] = "successful"
+    
+    # Payment successful
+    if !params[:pstatus].blank? && params[:pstatus] = "successful"
+      session[:order_id] = nil
+      flash[:notice] = t(:order_processed_successfully)
+    end
+    
+    return
   end
 end

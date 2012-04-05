@@ -21,11 +21,14 @@ Spree::CheckoutController.class_eval do
       
       redirect_uri = "https://secure.telluspay.com/WebOrder/?#{samport_key}" # create samport payment url
       redirect_to redirect_uri
+    else
+      return
     end
   end
   
   def update_flash_message
     logger.debug "\n----------- Samport::CheckoutController.update_flash_message -----------\n"
     flash[:error] = I18n.t(:samport_order_denied) if !params[:pstatus].blank? && params[:pstatus] == 'denied'
+    return
   end
 end
