@@ -18,7 +18,7 @@ class Spree::SamportController < Spree::BaseController
     order = Spree::Order.find_by_number(params[:order_number])
     
     if params[:response_code] == '00' # Response Code OK, approved payment
-      success(order, params[:card_type].blank? nil : params[:card_type])
+      success(order, params[:card_type].blank? ? nil : params[:card_type])
     else # Denied payment
       failure(order)
     end
