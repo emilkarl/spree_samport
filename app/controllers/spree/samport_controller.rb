@@ -6,6 +6,7 @@ class Spree::SamportController < Spree::BaseController
     samport_servers = [
       '82.99.3.1',
       '82.99.3.32',
+      '82.99.3.20',
       '88.80.180.132',
       '88.80.180.142',
       'https://secure.telluspay.com',
@@ -13,6 +14,7 @@ class Spree::SamportController < Spree::BaseController
       ]
     
     # Deny access for clients that are not Samport or localhost (for testing)
+    # TODO : This should render a 403 page instead of raising exception
     raise Spree::Core::GatewayError.new('Access Denied') unless samport_servers.include? request.remote_ip
     
     order = Spree::Order.find_by_number(params[:order_number])
@@ -38,6 +40,7 @@ class Spree::SamportController < Spree::BaseController
     logger.debug "\n--------- Samport.report.success >> #{order.number} >> #{order.id} >> #{order.state} ---------"
     order.payment.source.update_attribute(:card_type, card_type) unless card_type.blank?
     order.payment.complete!
+    order.update!
     order.next
     logger.debug "\n--------- #{I18n.t(:order_processed_successfully)} ---------"
   end

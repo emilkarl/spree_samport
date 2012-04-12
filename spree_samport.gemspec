@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'spree_samport'
-  s.version     = '1.0.1'
+  s.version     = '1.0.3'
   s.summary     = 'Samport payment method for Spree 1.x'
   s.description = ''
   s.required_ruby_version = '>= 1.8.7'
