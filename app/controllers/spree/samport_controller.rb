@@ -1,7 +1,7 @@
 class Spree::SamportController < Spree::BaseController
   
   def report
-    logger.debug "\n--------- Samport.report >> #{params} for client #{request.remote_ip} ---------"
+    logger.info "\n--------- Samport.report >> #{params} for client #{request.remote_ip} ---------"
     
     samport_servers = [
       '82.99.3.1',
@@ -30,18 +30,18 @@ class Spree::SamportController < Spree::BaseController
   
   private
   def failure(order)
-    logger.debug "\n--------- Samport.report.failure >> #{order.number} >> #{order.id} >> #{order.state} ---------"
+    logger.info "\n--------- Samport.report.failure >> #{order.number} >> #{order.id} >> #{order.state} ---------"
     order.update_attribute(:state, 'payment')
-    order.payment.update_attribute(:state, 'denied')
-    logger.debug "\n--------- #{I18n.t(:samport_payment_process_failed)} ---------"
+    order.payment.update_attribute(:state, 'failed')
+    logger.info "\n--------- #{I18n.t(:samport_payment_process_failed)} ---------"
   end
   
   def success(order, card_type = nil)
-    logger.debug "\n--------- Samport.report.success >> #{order.number} >> #{order.id} >> #{order.state} ---------"
+    logger.info "\n--------- Samport.report.success >> #{order.number} >> #{order.id} >> #{order.state} ---------"
     order.payment.source.update_attribute(:card_type, card_type) unless card_type.blank?
     order.payment.complete!
     order.update!
     order.next
-    logger.debug "\n--------- #{I18n.t(:order_processed_successfully)} ---------"
+    logger.info "\n--------- #{I18n.t(:order_processed_successfully)} ---------"
   end
 end
