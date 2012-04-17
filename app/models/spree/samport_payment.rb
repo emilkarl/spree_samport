@@ -15,13 +15,14 @@ class Spree::SamportPayment < ActiveRecord::Base
     iso_currency = payment_method.preferred(:iso_currency)
     @request_input = {}
     data = []
-    
+    payment_amount = 0
     # Add products
     order.line_items.each do |item|
       logger.debug "\n----------- Item: #{item.quantity}, #{item.product.sku}, #{item.product.name}, #{item.product.price} -----------\n"
       # <ArtNo>:<Description>:<Quantity>:<Price in the lowest value (ören, cent etc.)>
       price = item.product.price * 100
       data << clean_string("#{item.product.sku}:#{item.product.name}:#{item.quantity}:#{price.to_i}")
+      payment_amount += item.product.price
     end
     
     # Shipping cost
@@ -35,7 +36,10 @@ class Spree::SamportPayment < ActiveRecord::Base
       
       amount = 100 * adjustment.amount
       data << clean_string("1:#{adjustment.label}:1:#{amount.to_i}")
+      payment_amount += adjustment.amount
     end 
+    
+    order.payments.first.update_attribute(:amount, payment_amount)
     
     data = data.join(',')
     
