@@ -39,7 +39,7 @@ class Spree::SamportController < Spree::BaseController
   def success(order, card_type = nil)
     logger.info "\n--------- Samport.report.success >> #{order.number} >> #{order.id} >> #{order.state} ---------"
     order.payment.source.update_attribute(:card_type, card_type) unless card_type.blank?
-    order.payment.complete!
+    order.payment.update_attribute(:state, 'completed')
     order.update!
     order.next
     logger.info "\n--------- #{I18n.t(:order_processed_successfully)} ---------"
