@@ -32,12 +32,20 @@ class Spree::SamportPayment < ActiveRecord::Base
     #data << clean_string("1:#{order.shipping_method.name}:1:#{shipping_cost.to_i}")
     
     order.adjustments.eligible.each do |adjustment|
-      next if (adjustment.originator_type == 'Spree::TaxRate') and (adjustment.amount == 0)
+      next if (adjustment.originator_type == 'Spree::TaxRate') or (adjustment.amount == 0)
       
       amount = 100 * adjustment.amount
       data << clean_string("1:#{adjustment.label}:1:#{amount.to_i}")
       payment_amount += adjustment.amount
-    end 
+    end
+    
+    if order.tax_total.present?
+      order.tax_total.keys.each do |key|
+        amount = 100 * order.tax_total[key]
+        data << clean_string("1:#{key}:1:#{amount.to_i}")
+        payment_amount += order.tax_total[key]
+      end
+    end
     
     order.payments.first.update_attribute(:amount, payment_amount)
     
