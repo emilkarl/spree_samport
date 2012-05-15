@@ -32,7 +32,7 @@ class Spree::SamportPayment < ActiveRecord::Base
     #data << clean_string("1:#{order.shipping_method.name}:1:#{shipping_cost.to_i}")
     
     order.adjustments.eligible.each do |adjustment|
-      next if (adjustment.originator_type == 'Spree::TaxRate') or (adjustment.amount == 0)
+      next if (adjustment.originator_type == 'Spree::TaxRate') or (adjustment.amount === 0)
       
       amount = 100 * adjustment.amount
       data << clean_string("1:#{adjustment.label}:1:#{amount.to_i}")
