@@ -4,11 +4,12 @@ Spree::CheckoutController.class_eval do
   
   def redirect_to_samport_payment
     return unless params[:state] == "payment"
-    logger.info "\n----------- Samport::CheckoutController.redirect_to_samport_payment #{params} -----------\n"
+    
     @payment_method = Spree::PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])
     
     if @payment_method && @payment_method.kind_of?(Spree::PaymentMethod::Samport)
-     logger.debug "\n----------- #{object_params} -----------\n"
+      logger.info "\n----------- Samport::CheckoutController.redirect_to_samport_payment #{params} -----------\n"
+      logger.debug "\n----------- #{object_params} -----------\n"
       @order.update_attributes(object_params)
       
       if @order.coupon_code.present?

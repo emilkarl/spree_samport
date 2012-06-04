@@ -39,11 +39,11 @@ class Spree::SamportPayment < ActiveRecord::Base
       payment_amount += adjustment.amount
     end
     
-    if order.tax_total.present?
-      order.tax_total.keys.each do |key|
-        amount = 100 * order.tax_total[key]
+    if order.tax_totals.present?
+      order.tax_totals.keys.each do |key|
+        amount = 100 * order.tax_totals[key]
         data << clean_string("1:#{key}:1:#{amount.to_i}")
-        payment_amount += order.tax_total[key]
+        payment_amount += order.tax_totals[key]
       end
     end
     
