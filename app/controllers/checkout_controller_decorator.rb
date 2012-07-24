@@ -12,6 +12,12 @@ Spree::CheckoutController.class_eval do
       logger.debug "\n----------- #{object_params} -----------\n"
       @order.update_attributes(object_params)
       
+      # Remove Klarna invoice cost
+      if @order.adjustments.klarna_invoice_cost.count > 0
+        @order.adjustments.klarna_invoice_cost.destroy_all
+        @order.update!
+      end
+      
       if @order.coupon_code.present?
         if Spree::Promotion.exists?(:code => @order.coupon_code)
           fire_event('spree.checkout.coupon_code_added', :coupon_code => @order.coupon_code)
