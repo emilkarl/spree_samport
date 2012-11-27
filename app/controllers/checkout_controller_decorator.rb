@@ -13,6 +13,7 @@ Spree::CheckoutController.class_eval do
       @order.update_attributes(object_params)
       
       # Remove Klarna invoice cost
+      # Ugly fix for this, should be placed as a filter in spree_klarna_invoice https://github.com/emilkarl/spree_klarna_invoice
       if @order.adjustments.klarna_invoice_cost.count > 0
         @order.adjustments.klarna_invoice_cost.destroy_all
         @order.update!
