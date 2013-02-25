@@ -54,7 +54,8 @@ class Spree::SamportPayment < ActiveRecord::Base
     logger.debug "\n\n\n#{data}\n\n\n"
     
     @domain = "http://unix.telluspay.com/Add/?"
-    @querystring = "TP01=#{direct_capture}&TP700=#{terminal_id}&TP701=#{order.number}&TP740=#{data}&TP901=#{transaction_type}&TP491=#{iso_language_code}&TP490=#{iso_currency}&TP801=#{clean_string(order.email)}&TP8021=#{clean_string(order.bill_address.firstname)}&TP8022=#{clean_string(order.bill_address.lastname)}&TP803=#{clean_string(order.bill_address.address1)}&TP804=#{clean_string(order.bill_address.zipcode)}&TP805=#{clean_string(order.bill_address.city)}&TP806=#{order.bill_address.country.iso}&TP8071=#{order.user.id}&TP900=#{self.client_ip}"
+
+    @querystring = "TP01=#{direct_capture}&TP700=#{terminal_id}&TP701=#{order.number}&TP740=#{data}&TP901=#{transaction_type}&TP491=#{iso_language_code}&TP490=#{iso_currency}&TP801=#{clean_string(order.email)}&TP8021=#{clean_string(order.bill_address.firstname)}&TP8022=#{clean_string(order.bill_address.lastname)}&TP803=#{clean_string(order.bill_address.address1)}&TP804=#{clean_string(order.bill_address.zipcode)}&TP805=#{clean_string(order.bill_address.city)}&TP806=#{order.bill_address.country.iso}&TP900=#{self.client_ip}"
     logger.debug "\n----------- SamportPayment.create url -----------\n"
     logger.debug "\n----------- #{@domain}#{@querystring} -----------\n"
     

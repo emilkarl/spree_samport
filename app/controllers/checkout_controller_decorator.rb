@@ -31,7 +31,7 @@ Spree::CheckoutController.class_eval do
       end
       
       @order.update_attribute(:state, 'payment') # Set order state
-      
+      logger.debug "\n----------- Request:: #{request.remote_ip} -----------\n"
       @order.payment.source.update_attribute(:client_ip, request.remote_ip) # Set client ip
      
       @order.payment.update_attribute(:state, 'pending') # Set payment state
