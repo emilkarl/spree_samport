@@ -3,9 +3,6 @@ class Spree::SamportPayment < ActiveRecord::Base
   
   attr_accessible :samport_key, :card_type
   
-  def actions
-  end
-  
   def get_samport_key(payment_method, order)
     logger.debug "\n----------- SamportPayment.get_samport_key -----------\n"
     terminal_id = payment_method.preferred(:terminal_id)
