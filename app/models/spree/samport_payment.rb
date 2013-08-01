@@ -20,9 +20,9 @@ class Spree::SamportPayment < ActiveRecord::Base
     order.line_items.each do |item|
       logger.debug "\n----------- Item: #{item.quantity}, #{item.product.sku}, #{item.product.name}, #{item.product.price} -----------\n"
       # <ArtNo>:<Description>:<Quantity>:<Price in the lowest value (ören, cent etc.)>
-      price = item.product.price * 100
+      price = item.price * 100
       data << clean_string("#{item.product.sku}:#{item.product.name}:#{item.quantity}:#{price.to_i}")
-      payment_amount += item.product.price
+      payment_amount += item.price
     end
     
     # Shipping cost
