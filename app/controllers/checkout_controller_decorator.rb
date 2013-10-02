@@ -32,12 +32,13 @@ Spree::CheckoutController.class_eval do
       
       @order.update_attribute(:state, 'payment') # Set order state
       logger.debug "\n----------- Request:: #{request.remote_ip} -----------\n"
-      @order.payments.first.source.update_attribute(:client_ip, request.remote_ip) # Set client ip
+      current_payment = @order.payments.where(:source_type => 'Spree::SamportPayment').where(:state => 'checkout').first
+      current_payment.source.update_attribute(:client_ip, request.remote_ip) # Set client ip
      
-      @order.payments.first.update_attribute(:state, 'pending') # Set payment state
+      current_payment.update_attribute(:state, 'pending') # Set payment state
       
       samport_key = Spree::SamportPayment.new.get_samport_key(@payment_method, @order)
-      @order.payments.first.source.update_attribute(:samport_key, samport_key)
+      current_payment.source.update_attribute(:samport_key, samport_key)
       
       redirect_uri = "https://secure.telluspay.com/WebOrder/?#{samport_key}" # create samport payment url
       redirect_to redirect_uri

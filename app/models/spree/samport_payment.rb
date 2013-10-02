@@ -44,7 +44,8 @@ class Spree::SamportPayment < ActiveRecord::Base
       end
     end
     
-    order.payments.first.update_attribute(:amount, payment_amount)
+    current_payment = order.payments.where(:source_type => 'Spree::SamportPayment').first
+    current_payment.update_attribute(:amount, payment_amount)
     
     data = data.join(',')
     

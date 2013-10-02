@@ -32,14 +32,16 @@ class Spree::SamportController < Spree::BaseController
   def failure(order)
     logger.info "\n--------- Samport.report.failure >> #{order.number} >> #{order.id} >> #{order.state} ---------"
     order.update_attribute(:state, 'payment')
-    order.payments.first.update_attribute(:state, 'failed')
+    current_payment = order.payments.where(:source_type => 'Spree::SamportPayment').where(:state => 'pending').first
+    current_payment.update_attribute(:state, 'failed')
     logger.info "\n--------- #{I18n.t(:samport_payment_process_failed)} ---------"
   end
   
   def success(order, card_type = nil)
     logger.info "\n--------- Samport.report.success >> #{order.number} >> #{order.id} >> #{order.state} ---------"
     order.payments.first.source.update_attribute(:card_type, card_type) unless card_type.blank?
-    order.payments.first.update_attribute(:state, 'completed')
+    current_payment = order.payments.where(:source_type => 'Spree::SamportPayment').where(:state => 'pending').first
+    current_payment.update_attribute(:state, 'completed')
     order.update!
     order.next
     logger.info "\n--------- #{I18n.t(:order_processed_successfully)} ---------"
